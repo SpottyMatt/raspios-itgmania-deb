@@ -38,14 +38,14 @@ $(SUBDIRS): target/itgmania packages validate
 	rsync -v --update --recursive $@/* target/$@
 	mkdir -p target/$@/usr/games/$(@F)
 	rsync --update --recursive /usr/local/$(@F)/* target/$@/usr/games/$(@F)/.
-	$(MAKE) $(@F) FULLPATH=$@ SMPATH=$(@F)
+	$(MAKE) $(@F) FULLPATH=$@ ITGPATH=$(@F)
 .PHONY: all $(SUBDIRS)
 
-ifdef SMPATH
-STEPMANIA_VERSION_NUM:=$(shell /usr/local/$(SMPATH)/itgmania --version 2>/dev/null | head -n 1 | awk  '{gsub("ITGMania","", $$1); print $$1}')
-STEPMANIA_HASH:=$(shell /usr/local/$(SMPATH)/itgmania --version 2>/dev/null | head -n 2 | tail -n 1 | awk '{gsub("$(PAREN)","",$$NF); print $$NF}')
-STEPMANIA_DATE:=$(shell cd target/itgmania && git show -s --format=%cd --date=short $(STEPMANIA_HASH) | tr -d '-')
-STEPMANIA_DEPS:=$(shell ./find-bin-dep-pkg.py --display debian-control /usr/local/$(SMPATH)/itgmania)
+ifdef ITGPATH
+ITGMANIA_VERSION_NUM:=$(shell /usr/local/$(ITGPATH)/itgmania --version 2>/dev/null | head -n 1 | awk  '{gsub("ITGMania","", $$1); print $$1}')
+ITGMANIA_HASH:=$(shell /usr/local/$(ITGPATH)/itgmania --version 2>/dev/null | head -n 2 | tail -n 1 | awk '{gsub("$(PAREN)","",$$NF); print $$NF}')
+ITGMANIA_DATE:=$(shell cd target/itgmania && git show -s --format=%cd --date=short $(ITGMANIA_HASH) | tr -d '-')
+ITGMANIA_DEPS:=$(shell ./find-bin-dep-pkg.py --display debian-control /usr/local/$(ITGPATH)/itgmania)
 
 PACKAGER_NAME:=$(shell id -nu)
 PACKAGER_EMAIL:=$(shell git config --global user.email)
@@ -53,11 +53,11 @@ PACKAGER_EMAIL ?= nobody@example.com
 PACKAGE_DATE:=$(shell date +"%a, %d %b %Y %H:%M:%S %z")
 
 ifeq ($(RELEASE),true)
-STEPMANIA_VERSION=$(STEPMANIA_VERSION_NUM)
-STEPMANIA_DISTRIBUTION=stable
+ITGMANIA_VERSION=$(ITGMANIA_VERSION_NUM)
+ITGMANIA_DISTRIBUTION=stable
 else
-STEPMANIA_VERSION=$(STEPMANIA_VERSION_NUM)-$(STEPMANIA_DATE)
-STEPMANIA_DISTRIBUTION=UNRELEASED
+ITGMANIA_VERSION=$(ITGMANIA_VERSION_NUM)-$(ITGMANIA_DATE)
+ITGMANIA_DISTRIBUTION=UNRELEASED
 endif
 endif
 
@@ -66,18 +66,18 @@ itgmania-%: \
 	target/$(FULLPATH)/usr/share/doc/$(PACKAGE_NAME)/changelog.Debian.gz \
 	target/$(FULLPATH)/usr/share/doc/$(PACKAGE_NAME)/copyright \
 	target/$(FULLPATH)/usr/share/lintian/overrides/$(PACKAGE_NAME) \
-	target/$(FULLPATH)/usr/games/$(SMPATH)/GtkModule.so \
-	target/$(FULLPATH)/usr/games/$(SMPATH)/itgmania \
+	target/$(FULLPATH)/usr/games/$(ITGPATH)/GtkModule.so \
+	target/$(FULLPATH)/usr/games/$(ITGPATH)/itgmania \
 	target/$(FULLPATH)/usr/share/man/man6/itgmania.6.gz \
 	target/$(FULLPATH)/usr/bin/itgmania
 	cd target && fakeroot dpkg-deb --build $(FULLPATH)
-	mv target/$(FULLPATH).deb target/itgmania-$(RPI_MODEL)_$(STEPMANIA_VERSION)_$(DISTRO).deb
-	lintian target/itgmania-$(RPI_MODEL)_$(STEPMANIA_VERSION)_$(DISTRO).deb
+	mv target/$(FULLPATH).deb target/itgmania-$(RPI_MODEL)_$(ITGMANIA_VERSION)_$(DISTRO).deb
+	lintian target/itgmania-$(RPI_MODEL)_$(ITGMANIA_VERSION)_$(DISTRO).deb
 
 # itgmania symlink on the PATH
 target/$(FULLPATH)/usr/bin/itgmania:
 	mkdir -p $(@D)
-	ln -s ../games/$(SMPATH)/itgmania $@
+	ln -s ../games/$(ITGPATH)/itgmania $@
 
 # debian control files get envvars substituted FRESH EVERY TIME
 .PHONY: target/$(FULLPATH)/DEBIAN/*
@@ -103,13 +103,13 @@ target/$(FULLPATH)/usr/share/man/man6/itgmania.6.gz: $(FULLPATH)/usr/share/man/m
 	gzip --no-name -9 $(basename $@)
 
 # itgmania needs stripping
-.PHONY: target/$(FULLPATH)/usr/games/$(SMPATH)/itgmania
-target/$(FULLPATH)/usr/games/$(SMPATH)/itgmania:
+.PHONY: target/$(FULLPATH)/usr/games/$(ITGPATH)/itgmania
+target/$(FULLPATH)/usr/games/$(ITGPATH)/itgmania:
 	strip --strip-unneeded $@
 
 # GtkModule needs stripping and non-execute
-.PHONY: target/$(FULLPATH)/usr/games/$(SMPATH)/GtkModule.so
-target/$(FULLPATH)/usr/games/$(SMPATH)/GtkModule.so:
+.PHONY: target/$(FULLPATH)/usr/games/$(ITGPATH)/GtkModule.so
+target/$(FULLPATH)/usr/games/$(ITGPATH)/GtkModule.so:
 	strip --strip-unneeded $@
 	chmod a-x $@
 

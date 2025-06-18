@@ -1,9 +1,9 @@
 Package: $PACKAGE_NAME
-Version: $STEPMANIA_VERSION
+Version: $ITGMANIA_VERSION
 Section: contrib/games
 Priority: optional
 Architecture: $ARCH
-Depends: $STEPMANIA_DEPS
+Depends: $ITGMANIA_DEPS
 Maintainer: ITGMania Developers <itgmania@gmail.com>
 Description: Advanced cross-platform rhythm game for home and arcade use.
  This package was specifically built for the Raspberry Pi $RPI_MODEL platform.
