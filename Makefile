@@ -38,14 +38,14 @@ $(SUBDIRS): target/itgmania packages validate
 	rsync -v --update --recursive $@/* target/$@
 	mkdir -p target/$@/usr/games/$(@F)
 	rsync --update --recursive /usr/local/$(@F)/* target/$@/usr/games/$(@F)/.
-	$(MAKE) $(@F) FULLPATH=$@ ITGPATH=$(@F)
+	$(MAKE) $(@F) FULLPATH=$@ ITGMPATH=$(@F)
 .PHONY: all $(SUBDIRS)
 
-ifdef ITGPATH
-ITGMANIA_VERSION_NUM:=$(shell /usr/local/$(ITGPATH)/itgmania --version 2>/dev/null | head -n 1 | awk  '{gsub("ITGMania","", $$1); print $$1}')
-ITGMANIA_HASH:=$(shell /usr/local/$(ITGPATH)/itgmania --version 2>/dev/null | head -n 2 | tail -n 1 | awk '{gsub("$(PAREN)","",$$NF); print $$NF}')
+ifdef ITGMPATH
+ITGMANIA_VERSION_NUM:=$(shell /usr/local/$(ITGMPATH)/itgmania --version 2>/dev/null | head -n 1 | awk  '{gsub("ITGMania","", $$1); print $$1}')
+ITGMANIA_HASH:=$(shell /usr/local/$(ITGMPATH)/itgmania --version 2>/dev/null | head -n 2 | tail -n 1 | awk '{gsub("$(PAREN)","",$$NF); print $$NF}')
 ITGMANIA_DATE:=$(shell cd target/itgmania && git show -s --format=%cd --date=short $(ITGMANIA_HASH) | tr -d '-')
-ITGMANIA_DEPS:=$(shell ./find-bin-dep-pkg.py --display debian-control /usr/local/$(ITGPATH)/itgmania)
+ITGMANIA_DEPS:=$(shell ./find-bin-dep-pkg.py --display debian-control /usr/local/$(ITGMPATH)/itgmania)
 
 PACKAGER_NAME:=$(shell id -nu)
 PACKAGER_EMAIL:=$(shell git config --global user.email)
@@ -66,8 +66,8 @@ itgmania-%: \
 	target/$(FULLPATH)/usr/share/doc/$(PACKAGE_NAME)/changelog.Debian.gz \
 	target/$(FULLPATH)/usr/share/doc/$(PACKAGE_NAME)/copyright \
 	target/$(FULLPATH)/usr/share/lintian/overrides/$(PACKAGE_NAME) \
-	target/$(FULLPATH)/usr/games/$(ITGPATH)/GtkModule.so \
-	target/$(FULLPATH)/usr/games/$(ITGPATH)/itgmania \
+	target/$(FULLPATH)/usr/games/$(ITGMPATH)/GtkModule.so \
+	target/$(FULLPATH)/usr/games/$(ITGMPATH)/itgmania \
 	target/$(FULLPATH)/usr/share/man/man6/itgmania.6.gz \
 	target/$(FULLPATH)/usr/bin/itgmania
 	cd target && fakeroot dpkg-deb --build $(FULLPATH)
@@ -77,7 +77,7 @@ itgmania-%: \
 # itgmania symlink on the PATH
 target/$(FULLPATH)/usr/bin/itgmania:
 	mkdir -p $(@D)
-	ln -s ../games/$(ITGPATH)/itgmania $@
+	ln -s ../games/$(ITGMPATH)/itgmania $@
 
 # debian control files get envvars substituted FRESH EVERY TIME
 .PHONY: target/$(FULLPATH)/DEBIAN/*
@@ -103,13 +103,13 @@ target/$(FULLPATH)/usr/share/man/man6/itgmania.6.gz: $(FULLPATH)/usr/share/man/m
 	gzip --no-name -9 $(basename $@)
 
 # itgmania needs stripping
-.PHONY: target/$(FULLPATH)/usr/games/$(ITGPATH)/itgmania
-target/$(FULLPATH)/usr/games/$(ITGPATH)/itgmania:
+.PHONY: target/$(FULLPATH)/usr/games/$(ITGMPATH)/itgmania
+target/$(FULLPATH)/usr/games/$(ITGMPATH)/itgmania:
 	strip --strip-unneeded $@
 
 # GtkModule needs stripping and non-execute
-.PHONY: target/$(FULLPATH)/usr/games/$(ITGPATH)/GtkModule.so
-target/$(FULLPATH)/usr/games/$(ITGPATH)/GtkModule.so:
+.PHONY: target/$(FULLPATH)/usr/games/$(ITGMPATH)/GtkModule.so
+target/$(FULLPATH)/usr/games/$(ITGMPATH)/GtkModule.so:
 	strip --strip-unneeded $@
 	chmod a-x $@
 
