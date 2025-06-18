@@ -25,5 +25,5 @@
 
 ## Completion
 - [x] Final review of all files
-- [ ] Commit changes to repository
+- [x] Commit changes to repository
 - [ ] Test remote build on famipi 
