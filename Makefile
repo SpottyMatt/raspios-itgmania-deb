@@ -11,7 +11,8 @@ endif
 
 PACKAGE_NAME = itgmania-$(RPI_MODEL)
 
-SUBDIRS := $(ARCH)/*
+# Fix: Use find to properly enumerate subdirectories 
+SUBDIRS := $(shell find $(ARCH) -mindepth 1 -maxdepth 1 -type d 2>/dev/null)
 
 PAREN := \)
 
@@ -33,12 +34,13 @@ else
 
 all: $(SUBDIRS)
 $(SUBDIRS): target/itgmania packages validate
-	rm -rf target/$@
-	mkdir -p target/$@
-	rsync -v --update --recursive $@/* target/$@
-	mkdir -p target/$@/usr/games/$(@F)
-	rsync --update --recursive /usr/local/$(@F)/* target/$@/usr/games/$(@F)/.
-	$(MAKE) $(@F) FULLPATH=$@ ITGMPATH=$(@F)
+	rm -rf target/$(notdir $@)
+	mkdir -p target/$(notdir $@)
+	# Fix: Don't use wildcards in rsync paths
+	rsync -v --update --recursive $@/ target/$(notdir $@)/
+	mkdir -p target/$(notdir $@)/usr/games/$(notdir $@)
+	rsync --update --recursive /usr/local/$(notdir $@)/ target/$(notdir $@)/usr/games/$(notdir $@)/
+	$(MAKE) $(notdir $@) FULLPATH=$(notdir $@) ITGMPATH=$(notdir $@)
 .PHONY: all $(SUBDIRS)
 
 ifdef ITGMPATH
