@@ -55,7 +55,7 @@ For example, if you built ITGMania 1.0.2, as it stood on July 23, 2023, and pack
 The version number, source control revision, and revision date used in the binary package
 will be determined automatically by looking at the `itgmania` binary that you compiled.
 
-The Raspberry Pi model will be determined by the [SpottyMatt/rpi-hw-info](https://github.com/SpottyMatt/rpi-hw-info) repository.
+The Raspberry Pi model will be determined by the [rpi-hw-info](https://pypi.org/project/rpi-hw-info/) PyPI package.
 
 If you want to package and distribute a different version, just compile a different version first!
 

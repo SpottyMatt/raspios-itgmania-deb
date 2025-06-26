@@ -1,6 +1,6 @@
 DISTRO := $(shell dpkg --status tzdata|grep Provides|cut -f2 -d'-')
 ARCH := $(shell dpkg --print-architecture)
-RPI_MODEL = $(shell ./rpi-hw-info/rpi-hw-info.py 2>/dev/null | awk -F ':' '{print $$1}' | tr '[:upper:]' '[:lower:]' )
+RPI_MODEL = $(shell ./venv/bin/rpi-hw-info 2>/dev/null | awk -F ':' '{print $$1}' | tr '[:upper:]' '[:lower:]' )
 
 ifeq ($(RPI_MODEL),3b+)
 # RPI 3B and 3B+ are the same hardware architecture and targets
@@ -18,16 +18,17 @@ PAREN := \)
 
 .EXPORT_ALL_VARIABLES:
 
-ifeq ($(wildcard ./rpi-hw-info/rpi-hw-info.py),)
-all: submodules
+ifeq ($(wildcard ./venv/bin/rpi-hw-info),)
+all: rpi-hw-info-setup
 	$(MAKE) all
 
-submodules:
-	git submodule init rpi-hw-info
-	git submodule update rpi-hw-info
-	@ if ! [ -e ./rpi-hw-info/rpi-hw-info.py ]; then echo "Couldn't retrieve the RPi HW Info Detector's git submodule. Figure out why or run 'make RPI_MODEL=<your_model>'"; exit 1; fi
+rpi-hw-info-setup:
+	python3 -m venv venv
+	./venv/bin/pip install --upgrade pip
+	./venv/bin/pip install rpi-hw-info==2.0.4
+	@ if ! [ -e ./venv/bin/rpi-hw-info ]; then echo "Failed to install rpi-hw-info. Check Python and pip setup."; exit 1; fi
 
-%: submodules
+%: rpi-hw-info-setup
 	$(MAKE) $@
 
 else
@@ -94,7 +95,7 @@ target/$(FULLPATH)/usr/share/lintian/overrides/$(PACKAGE_NAME): $(FULLPATH)/usr/
 target/$(FULLPATH)/usr/share/doc/$(PACKAGE_NAME)/changelog.Debian.gz: $(FULLPATH)/usr/share/doc/itgmania/changelog.Debian
 	mkdir -p $(shell dirname $@)
 	cat $(<) | envsubst > $(basename $@)
-	gzip --no-name -9 $(basename $@)
+	gzip --no-name $(basename $@)
 
 # copyright gets renamed
 target/$(FULLPATH)/usr/share/doc/$(PACKAGE_NAME)/copyright: $(FULLPATH)/usr/share/doc/itgmania/copyright
@@ -130,9 +131,13 @@ packages:
 validate:
 	@if [ "x" = "x$(RPI_MODEL)" ]; then \
 		echo "ERROR: Unrecognized Raspberry Pi model. Run 'make RPI_MODEL=<model>' if you know which RPi you compiled for."; \
-		./rpi-hw-info/rpi-hw-info.py; \
+		./venv/bin/rpi-hw-info; \
 		exit 1; \
 	fi
+
+.PHONY: clean-rpi-hw-info
+clean-rpi-hw-info:
+	rm -rf venv
 
 .PHONY: clean
 clean:
