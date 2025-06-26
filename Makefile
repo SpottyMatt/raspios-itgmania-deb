@@ -14,11 +14,6 @@ PACKAGE_NAME = itgmania-$(RPI_MODEL)
 # Fix: Use find to properly enumerate subdirectories 
 SUBDIRS := $(shell find $(ARCH) -mindepth 1 -maxdepth 1 -type d 2>/dev/null)
 
-# Detect actual ITGMania installation path and version
-ITGMANIA_DETECTION := $(shell ./detect-itgmania-path.sh 2>/dev/null || echo "/usr/local/itgmania:1.0")
-ACTUAL_ITGMANIA_PATH := $(shell echo "$(ITGMANIA_DETECTION)" | cut -d: -f1)
-DETECTED_VERSION := $(shell echo "$(ITGMANIA_DETECTION)" | cut -d: -f2)
-
 PAREN := \)
 
 .EXPORT_ALL_VARIABLES:
@@ -45,17 +40,15 @@ $(SUBDIRS): target/itgmania packages validate
 	# Fix: Don't use wildcards in rsync paths
 	rsync -v --update --recursive $@/ target/$(notdir $@)/
 	mkdir -p target/$(notdir $@)/usr/games/$(notdir $@)
-	# Use detected ITGMania path instead of assuming directory name matches installation
-	rsync --update --recursive $(ACTUAL_ITGMANIA_PATH)/ target/$(notdir $@)/usr/games/$(notdir $@)/
-	$(MAKE) $(notdir $@) FULLPATH=$(notdir $@) ITGMPATH=$(notdir $@) ACTUAL_PATH=$(ACTUAL_ITGMANIA_PATH)
+	rsync --update --recursive /usr/local/$(notdir $@)/ target/$(notdir $@)/usr/games/$(notdir $@)/
+	$(MAKE) $(notdir $@) FULLPATH=$(notdir $@) ITGMPATH=$(notdir $@)
 .PHONY: all $(SUBDIRS)
 
 ifdef ITGMPATH
-# Use actual ITGMania installation path for version extraction
-ITGMANIA_VERSION_NUM:=$(shell $(ACTUAL_ITGMANIA_PATH)/itgmania --version 2>/dev/null | head -n 1 | awk  '{gsub("ITGMania","", $$1); print $$1}' || echo "$(DETECTED_VERSION)")
-ITGMANIA_HASH:=$(shell $(ACTUAL_ITGMANIA_PATH)/itgmania --version 2>/dev/null | head -n 2 | tail -n 1 | awk '{gsub("$(PAREN)","",$$NF); print $$NF}')
-ITGMANIA_DATE:=$(shell cd target/itgmania && git show -s --format=%cd --date=short $(ITGMANIA_HASH) | tr -d '-' || date +%Y%m%d)
-ITGMANIA_DEPS:=$(shell ./find-bin-dep-pkg.py --display debian-control $(ACTUAL_ITGMANIA_PATH)/itgmania)
+ITGMANIA_VERSION_NUM:=$(shell /usr/local/$(ITGMPATH)/itgmania --version 2>/dev/null | head -n 1 | awk  '{gsub("ITGMania","", $$1); print $$1}')
+ITGMANIA_HASH:=$(shell /usr/local/$(ITGMPATH)/itgmania --version 2>/dev/null | head -n 2 | tail -n 1 | awk '{gsub("$(PAREN)","",$$NF); print $$NF}')
+ITGMANIA_DATE:=$(shell cd target/itgmania && git show -s --format=%cd --date=short $(ITGMANIA_HASH) | tr -d '-')
+ITGMANIA_DEPS:=$(shell ./find-bin-dep-pkg.py --display debian-control /usr/local/$(ITGMPATH)/itgmania)
 
 PACKAGER_NAME:=$(shell id -nu)
 PACKAGER_EMAIL:=$(shell git config --global user.email)
