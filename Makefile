@@ -45,7 +45,7 @@ $(SUBDIRS): target/itgmania packages validate
 .PHONY: all $(SUBDIRS)
 
 ifdef ITGMPATH
-ITGMANIA_VERSION_NUM:=$(shell /usr/local/$(ITGMPATH)/itgmania --version 2>/dev/null | head -n 1 | awk  '{gsub("ITGMania","", $$1); print $$1}')
+ITGMANIA_VERSION_NUM:=$(shell ./extract-version-from-binary.sh /usr/local/itgmania/itgmania)
 ITGMANIA_HASH:=$(shell /usr/local/$(ITGMPATH)/itgmania --version 2>/dev/null | head -n 2 | tail -n 1 | awk '{gsub("$(PAREN)","",$$NF); print $$NF}')
 ITGMANIA_DATE:=$(shell cd target/itgmania && git show -s --format=%cd --date=short $(ITGMANIA_HASH) | tr -d '-')
 ITGMANIA_DEPS:=$(shell ./find-bin-dep-pkg.py --display debian-control /usr/local/$(ITGMPATH)/itgmania)
