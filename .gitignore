@@ -1,3 +1,8 @@
 logs/
 target/
-venv/ 
+venv/
+
+# Task tracking files (development use only)
+TASKS.md
+task-list.md
+*task*.md 
