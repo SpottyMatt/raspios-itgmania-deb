@@ -14,7 +14,9 @@ PACKAGE_NAME = itgmania-$(RPI_MODEL)
 # Read the one itgmania binary that was built, and get the version to find the package spec
 ITGMANIA_VERSION_HASH:=$(shell ./extract-version-from-binary.sh /usr/local/itgmania/itgmania --version-hash)
 ITGMANIA_VERSION_NUM:=$(shell echo "$(ITGMANIA_VERSION_HASH)" | cut -d' ' -f1)
-ITGM_PKG_SPEC_DIR := $(ARCH)/itgmania-$(ITGMANIA_VERSION_NUM)
+ITGMANIA_VERSION_MAJOR_MINOR:=$(shell echo "$(ITGMANIA_VERSION_NUM)" | sed 's/\.[^.]*$$//')
+
+ITGM_PKG_SPEC_DIR := $(ARCH)/itgmania-$(ITGMANIA_VERSION_MAJOR_MINOR)
 
 .EXPORT_ALL_VARIABLES:
 
