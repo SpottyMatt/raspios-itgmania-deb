@@ -24,4 +24,4 @@ $PACKAGE_NAME binary: package-section-games-but-has-usr-bin
 
 # This was built for Raspberry Pi on the debian-based Raspberry Pi OS
 # I don't know why deb doesn't know about the arm architecture.
-$PACKAGE_NAME binary: unknown-architecture armv7l 
+$PACKAGE_NAME binary: unknown-architecture armv7l
