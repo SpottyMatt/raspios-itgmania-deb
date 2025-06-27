@@ -147,4 +147,4 @@ clean-rpi-hw-info:
 clean:
 	rm -rf target
 
-endif 
+endif

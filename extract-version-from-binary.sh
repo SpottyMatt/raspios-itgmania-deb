@@ -62,4 +62,4 @@ case "$MODE" in
     *)
         echo "$VERSION_NUM"
         ;;
-esac 
+esac

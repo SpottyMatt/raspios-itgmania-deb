@@ -75,4 +75,4 @@ if "package-versions" == args.display:
 	exit(0)
 elif "debian-control" == args.display:
 	print( ",\n ".join( "{} (>= {})".format(package, version) for package, version in sorted( package_versions.items() ) ) )
-	exit(0) 
+	exit(0)
