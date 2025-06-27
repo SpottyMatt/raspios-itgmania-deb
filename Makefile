@@ -70,6 +70,7 @@ all: execute-bit packages validate
 	# copy built itgmania into staging dir
 	mkdir -p target/$(PACKAGE_SPEC_DIR)/usr/games/$(PACKAGE_SPEC_NAME)
 	rsync --update --recursive $(ITGMANIA_BASE_DIR)/* target/$(PACKAGE_SPEC_DIR)/usr/games/$(PACKAGE_SPEC_NAME)/.
+	$(MAKE) $(PACKAGE_SPEC_NAME)
 .PHONY: all
 
 itgmania-%: \
