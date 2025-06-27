@@ -11,8 +11,10 @@ endif
 
 PACKAGE_NAME = itgmania-$(RPI_MODEL)
 
-# Fix: Use find to properly enumerate subdirectories 
-SUBDIRS := $(shell find $(ARCH) -mindepth 1 -maxdepth 1 -type d 2>/dev/null)
+# Read the one itgmania binary that was built, and get the version to find the package spec
+ITGMANIA_VERSION_HASH:=$(shell ./extract-version-from-binary.sh /usr/local/itgmania/itgmania --version-hash)
+ITGMANIA_VERSION_NUM:=$(shell echo "$(ITGMANIA_VERSION_HASH)" | cut -d' ' -f1)
+ITGM_PKG_SPEC_DIR := $($(ARCH)/itgmania-$(ITGMANIA_VERSION_NUM))
 
 PAREN := \)
 
@@ -33,21 +35,17 @@ rpi-hw-info-setup:
 
 else
 
-all: $(SUBDIRS)
-$(SUBDIRS): target/itgmania packages validate
-	rm -rf target/$(notdir $@)
-	mkdir -p target/$(notdir $@)
-	# Fix: Don't use wildcards in rsync paths
-	rsync -v --update --recursive $@/ target/$(notdir $@)/
-	mkdir -p target/$(notdir $@)/usr/games/$(notdir $@)
-	rsync --update --recursive /usr/local/$(notdir $@)/ target/$(notdir $@)/usr/games/$(notdir $@)/
-	$(MAKE) $(notdir $@) FULLPATH=$(notdir $@) ITGMPATH=$(notdir $@)
-.PHONY: all $(SUBDIRS)
+all: $(ITGM_PKG_SPEC_DIR)
+$(ITGM_PKG_SPEC_DIR): target/itgmania packages validate
+	rm -rf target/$@
+	mkdir -p target/$@
+	rsync -v --update --recursive $@/* target/$@
+	mkdir -p target/$@/usr/games/$(@F)
+	rsync --update --recursive /usr/local/$(@F)/* target/$@/usr/games/$(@F)/.
+	$(MAKE) $(@F) FULLPATH=$@ SMPATH=$(@F)
+.PHONY: all $(ITGM_PKG_SPEC_DIR)
 
 ifdef ITGMPATH
-# Extract version and hash in one call, then split
-ITGMANIA_VERSION_HASH:=$(shell ./extract-version-from-binary.sh /usr/local/itgmania/itgmania --version-hash)
-ITGMANIA_VERSION_NUM:=$(shell echo "$(ITGMANIA_VERSION_HASH)" | cut -d' ' -f1)
 ITGMANIA_HASH:=$(shell echo "$(ITGMANIA_VERSION_HASH)" | cut -d' ' -f2)
 ITGMANIA_DATE:=$(shell cd target/itgmania && git show -s --format=%cd --date=short $(ITGMANIA_HASH) | tr -d '-')
 ITGMANIA_DEPS:=$(shell ./find-bin-dep-pkg.py --display debian-control /usr/local/$(ITGMPATH)/itgmania)
