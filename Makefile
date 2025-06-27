@@ -36,7 +36,7 @@ RPI_MODEL=3b
 endif
 
 # Read the one itgmania binary and get version, hash, and date
-ITGMANIA_VERSION_HASH_DATE   :=$(shell ./extract-version-from-binary.sh $(ITGMANIA_BASE_DIR)/itgmania --version-hash-date)
+ITGMANIA_VERSION_HASH_DATE   :=$(shell ./extract-version-from-binary.py $(ITGMANIA_BASE_DIR)/itgmania --version-hash-date)
 ITGMANIA_VERSION_NUM         :=$(shell echo "$(ITGMANIA_VERSION_HASH_DATE)" | cut -d' ' -f1)
 ITGMANIA_HASH                :=$(shell echo "$(ITGMANIA_VERSION_HASH_DATE)" | cut -d' ' -f2)
 ITGMANIA_DATE                :=$(shell echo "$(ITGMANIA_VERSION_HASH_DATE)" | cut -d' ' -f3)
@@ -129,7 +129,7 @@ packages:
 .PHONY: execute-bit
 execute-bit:
 	chmod a+x find-bin-dep-pkg.py
-	chmod a+x extract-version-from-binary.sh
+	chmod a+x extract-version-from-binary.py
 
 .PHONY: validate
 validate:
