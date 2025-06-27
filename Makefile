@@ -46,7 +46,7 @@ PACKAGE_NAME                 = itgmania-$(RPI_MODEL)
 PACKAGE_SPEC_DIR             := $(ARCH)/itgmania-$(ITGMANIA_VERSION_MAJOR_MINOR)
 
 all: $(PACKAGE_SPEC_DIR)
-$(PACKAGE_SPEC_DIR): packages validate
+$(PACKAGE_SPEC_DIR): execute-bit packages validate
 	rm -rf target/$@
 	mkdir -p target/$@
 	rsync -v --update --recursive $@/* target/$@
@@ -124,6 +124,11 @@ packages:
 	sudo apt-get install -y \
 		binutils \
 		lintian
+
+.PHONY: execute-bit
+execute-bit:
+	chmod a+x find-bin-dep-pkg.py
+	chmod a+x extract-version-from-binary.sh
 
 .PHONY: validate
 validate:
