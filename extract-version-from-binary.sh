@@ -1,6 +1,6 @@
 #!/bin/bash
-# Script to extract version and hash from ITGMania binary
-# Usage: ./extract-version-from-binary.sh <binary_path> [--major-minor-only|--hash-only|--version-hash]
+# Script to extract version, hash, and date from ITGMania binary
+# Usage: ./extract-version-from-binary.sh <binary_path> [--major-minor-only|--hash-only|--date-only|--version-hash|--version-hash-date]
 
 set -e
 
@@ -8,7 +8,7 @@ BINARY_PATH="$1"
 MODE="${2:-full}"
 
 if [ -z "$BINARY_PATH" ]; then
-    echo "Usage: $0 <binary_path> [--major-minor-only|--hash-only|--version-hash]" >&2
+    echo "Usage: $0 <binary_path> [--major-minor-only|--hash-only|--date-only|--version-hash|--version-hash-date]" >&2
     exit 1
 fi
 
@@ -32,6 +32,9 @@ VERSION_NUM=$(echo "$VERSION_OUTPUT" | head -n 1 | sed -E 's/ITGmania([0-9]+\.[0
 # Extract hash from first line after "-git-"
 HASH=$(echo "$VERSION_OUTPUT" | head -n 1 | sed -E 's/.*-git-([a-f0-9]+).*/\1/')
 
+# Extract date from second line "Compiled 20250624 @ 00:32:41"
+DATE=$(echo "$VERSION_OUTPUT" | head -n 2 | tail -n 1 | sed -E 's/.*Compiled ([0-9]{8}).*/\1/')
+
 if [ -z "$VERSION_NUM" ]; then
     echo "Error: Could not parse version from output: $VERSION_OUTPUT" >&2
     exit 1
@@ -45,9 +48,16 @@ case "$MODE" in
     "--hash-only")
         echo "$HASH"
         ;;
+    "--date-only")
+        echo "$DATE"
+        ;;
     "--version-hash")
         # Return both space-separated: "1.0.2 427484d100"
         echo "$VERSION_NUM $HASH"
+        ;;
+    "--version-hash-date")
+        # Return all three space-separated: "1.0.2 427484d100 20250624"
+        echo "$VERSION_NUM $HASH $DATE"
         ;;
     *)
         echo "$VERSION_NUM"

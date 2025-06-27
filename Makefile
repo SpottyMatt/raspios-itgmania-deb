@@ -35,16 +35,18 @@ ifeq ($(RPI_MODEL),3b+)
 RPI_MODEL=3b
 endif
 
-# Read the one itgmania binary and get the version to find the package spec
-ITGMANIA_VERSION_HASH        :=$(shell ./extract-version-from-binary.sh $(ITGMANIA_BASE_DIR)/itgmania --version-hash)
-ITGMANIA_VERSION_NUM         :=$(shell echo "$(ITGMANIA_VERSION_HASH)" | cut -d' ' -f1)
+# Read the one itgmania binary and get version, hash, and date
+ITGMANIA_VERSION_HASH_DATE   :=$(shell ./extract-version-from-binary.sh $(ITGMANIA_BASE_DIR)/itgmania --version-hash-date)
+ITGMANIA_VERSION_NUM         :=$(shell echo "$(ITGMANIA_VERSION_HASH_DATE)" | cut -d' ' -f1)
+ITGMANIA_HASH                :=$(shell echo "$(ITGMANIA_VERSION_HASH_DATE)" | cut -d' ' -f2)
+ITGMANIA_DATE                :=$(shell echo "$(ITGMANIA_VERSION_HASH_DATE)" | cut -d' ' -f3)
 ITGMANIA_VERSION_MAJOR_MINOR :=$(shell echo "$(ITGMANIA_VERSION_NUM)" | sed 's/\.[^.]*$$//')
 
 PACKAGE_NAME                 = itgmania-$(RPI_MODEL)
 PACKAGE_SPEC_DIR             := $(ARCH)/itgmania-$(ITGMANIA_VERSION_MAJOR_MINOR)
 
 all: $(PACKAGE_SPEC_DIR)
-$(PACKAGE_SPEC_DIR): target/itgmania packages validate
+$(PACKAGE_SPEC_DIR): packages validate
 	rm -rf target/$@
 	mkdir -p target/$@
 	rsync -v --update --recursive $@/* target/$@
@@ -54,8 +56,6 @@ $(PACKAGE_SPEC_DIR): target/itgmania packages validate
 .PHONY: all $(PACKAGE_SPEC_DIR)
 
 ifdef ITGMPATH
-ITGMANIA_HASH:=$(shell echo "$(ITGMANIA_VERSION_HASH)" | cut -d' ' -f2)
-ITGMANIA_DATE:=$(shell cd target/itgmania && git show -s --format=%cd --date=short $(ITGMANIA_HASH) | tr -d '-')
 ITGMANIA_DEPS:=$(shell ./find-bin-dep-pkg.py --display debian-control $(ITGMANIA_BASE_DIR)/itgmania)
 
 PACKAGER_NAME:=$(shell id -nu)
@@ -123,10 +123,6 @@ target/$(FULLPATH)/usr/games/$(ITGMPATH)/itgmania:
 target/$(FULLPATH)/usr/games/$(ITGMPATH)/GtkModule.so:
 	strip --strip-unneeded $@
 	chmod a-x $@
-
-# clone the itgmania repository so we can get commit information
-target/itgmania:
-	git clone https://github.com/itgmania/itgmania.git target/itgmania
 
 # Install deb package linter
 .PHONY: packages
