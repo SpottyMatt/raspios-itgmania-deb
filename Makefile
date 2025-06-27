@@ -1,6 +1,32 @@
-DISTRO := $(shell dpkg --status tzdata|grep Provides|cut -f2 -d'-')
-ARCH := $(shell dpkg --print-architecture)
-RPI_MODEL = $(shell ./venv/bin/rpi-hw-info 2>/dev/null | awk -F ':' '{print $$1}' | tr '[:upper:]' '[:lower:]' )
+DISTRO    := $(shell dpkg --status tzdata|grep Provides|cut -f2 -d'-')
+ARCH      := $(shell dpkg --print-architecture)
+
+ITGMANIA_BASE_DIR := /usr/local/itgmania
+
+.EXPORT_ALL_VARIABLES:
+
+ifeq ($(wildcard ./venv/bin/rpi-hw-info),)
+#####
+# rpi-hw-info not installed; install it so we can detect the rpi model
+#####
+all: rpi-hw-info-setup
+	$(MAKE) all
+
+rpi-hw-info-setup:
+	python3 -m venv venv
+	./venv/bin/pip install --upgrade pip
+	./venv/bin/pip install rpi-hw-info~=2.0
+	@ if ! [ -e ./venv/bin/rpi-hw-info ]; then echo "Failed to install rpi-hw-info. Check Python and pip setup."; exit 1; fi
+
+%: rpi-hw-info-setup
+	$(MAKE) $@
+
+else
+#####
+# able to detect rpi model; can actually build the package
+#####
+
+RPI_MODEL := $(shell ./venv/bin/rpi-hw-info 2>/dev/null | awk -F ':' '{print $$1}' | tr '[:upper:]' '[:lower:]' )
 
 ifeq ($(RPI_MODEL),3b+)
 # RPI 3B and 3B+ are the same hardware architecture and targets
@@ -9,46 +35,28 @@ ifeq ($(RPI_MODEL),3b+)
 RPI_MODEL=3b
 endif
 
-PACKAGE_NAME = itgmania-$(RPI_MODEL)
+# Read the one itgmania binary and get the version to find the package spec
+ITGMANIA_VERSION_HASH        :=$(shell ./extract-version-from-binary.sh $(ITGMANIA_BASE_DIR)/itgmania --version-hash)
+ITGMANIA_VERSION_NUM         :=$(shell echo "$(ITGMANIA_VERSION_HASH)" | cut -d' ' -f1)
+ITGMANIA_VERSION_MAJOR_MINOR :=$(shell echo "$(ITGMANIA_VERSION_NUM)" | sed 's/\.[^.]*$$//')
 
-# Read the one itgmania binary that was built, and get the version to find the package spec
-ITGMANIA_VERSION_HASH:=$(shell ./extract-version-from-binary.sh /usr/local/itgmania/itgmania --version-hash)
-ITGMANIA_VERSION_NUM:=$(shell echo "$(ITGMANIA_VERSION_HASH)" | cut -d' ' -f1)
-ITGMANIA_VERSION_MAJOR_MINOR:=$(shell echo "$(ITGMANIA_VERSION_NUM)" | sed 's/\.[^.]*$$//')
+PACKAGE_NAME                 = itgmania-$(RPI_MODEL)
+PACKAGE_SPEC_DIR             := $(ARCH)/itgmania-$(ITGMANIA_VERSION_MAJOR_MINOR)
 
-ITGM_PKG_SPEC_DIR := $(ARCH)/itgmania-$(ITGMANIA_VERSION_MAJOR_MINOR)
-
-.EXPORT_ALL_VARIABLES:
-
-ifeq ($(wildcard ./venv/bin/rpi-hw-info),)
-all: rpi-hw-info-setup
-	$(MAKE) all
-
-rpi-hw-info-setup:
-	python3 -m venv venv
-	./venv/bin/pip install --upgrade pip
-	./venv/bin/pip install rpi-hw-info==2.0.4
-	@ if ! [ -e ./venv/bin/rpi-hw-info ]; then echo "Failed to install rpi-hw-info. Check Python and pip setup."; exit 1; fi
-
-%: rpi-hw-info-setup
-	$(MAKE) $@
-
-else
-
-all: $(ITGM_PKG_SPEC_DIR)
-$(ITGM_PKG_SPEC_DIR): target/itgmania packages validate
+all: $(PACKAGE_SPEC_DIR)
+$(PACKAGE_SPEC_DIR): target/itgmania packages validate
 	rm -rf target/$@
 	mkdir -p target/$@
 	rsync -v --update --recursive $@/* target/$@
 	mkdir -p target/$@/usr/games/$(@F)
-	rsync --update --recursive /usr/local/$(@F)/* target/$@/usr/games/$(@F)/.
+	rsync --update --recursive $(ITGMANIA_BASE_DIR)/* target/$@/usr/games/$(@F)/.
 	$(MAKE) $(@F) FULLPATH=$@ SMPATH=$(@F)
-.PHONY: all $(ITGM_PKG_SPEC_DIR)
+.PHONY: all $(PACKAGE_SPEC_DIR)
 
 ifdef ITGMPATH
 ITGMANIA_HASH:=$(shell echo "$(ITGMANIA_VERSION_HASH)" | cut -d' ' -f2)
 ITGMANIA_DATE:=$(shell cd target/itgmania && git show -s --format=%cd --date=short $(ITGMANIA_HASH) | tr -d '-')
-ITGMANIA_DEPS:=$(shell ./find-bin-dep-pkg.py --display debian-control /usr/local/$(ITGMPATH)/itgmania)
+ITGMANIA_DEPS:=$(shell ./find-bin-dep-pkg.py --display debian-control $(ITGMANIA_BASE_DIR)/itgmania)
 
 PACKAGER_NAME:=$(shell id -nu)
 PACKAGER_EMAIL:=$(shell git config --global user.email)
