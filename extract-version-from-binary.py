@@ -80,9 +80,7 @@ Examples:
     
     parser.add_argument('binary_path', help='Path to the ITGMania binary')
     parser.add_argument('mode', nargs='?', default='full',
-                       choices=['--major-minor-only', '--hash-only', '--date-only', 
-                               '--version-hash', '--version-hash-date', 'full'],
-                       help='Output mode (default: full version number)')
+                       help='Output mode: --major-minor-only, --hash-only, --date-only, --version-hash, --version-hash-date, or full (default)')
     
     args = parser.parse_args()
     
