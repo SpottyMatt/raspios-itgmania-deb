@@ -50,7 +50,7 @@ $(PACKAGE_SPEC_DIR): target/itgmania packages validate
 	rsync -v --update --recursive $@/* target/$@
 	mkdir -p target/$@/usr/games/$(@F)
 	rsync --update --recursive $(ITGMANIA_BASE_DIR)/* target/$@/usr/games/$(@F)/.
-	$(MAKE) $(@F) FULLPATH=$@ SMPATH=$(@F)
+	$(MAKE) $(@F) FULLPATH=$@ ITGMPATH=$(@F)
 .PHONY: all $(PACKAGE_SPEC_DIR)
 
 ifdef ITGMPATH
