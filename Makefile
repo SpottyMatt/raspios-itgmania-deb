@@ -43,20 +43,8 @@ ITGMANIA_DATE                :=$(shell echo "$(ITGMANIA_VERSION_HASH_DATE)" | cu
 ITGMANIA_VERSION_MAJOR_MINOR :=$(shell echo "$(ITGMANIA_VERSION_NUM)" | sed 's/\.[^.]*$$//')
 
 PACKAGE_NAME                 = itgmania-$(RPI_MODEL)
-PACKAGE_SPEC_DIR             := $(ARCH)/itgmania-$(ITGMANIA_VERSION_MAJOR_MINOR)
-
-all: $(PACKAGE_SPEC_DIR)
-$(PACKAGE_SPEC_DIR): execute-bit packages validate
-	rm -rf target/$@
-	mkdir -p target/$@
-	rsync -v --update --recursive $@/* target/$@
-	mkdir -p target/$@/usr/games/$(@F)
-	rsync --update --recursive $(ITGMANIA_BASE_DIR)/* target/$@/usr/games/$(@F)/.
-	$(MAKE) $(@F) FULLPATH=$@ ITGMPATH=$(@F)
-.PHONY: all $(PACKAGE_SPEC_DIR)
-
-ifdef ITGMPATH
-ITGMANIA_DEPS:=$(shell ./find-bin-dep-pkg.py --display debian-control $(ITGMANIA_BASE_DIR)/itgmania)
+PACKAGE_SPEC_NAME            = itgmania-$(ITGMANIA_VERSION_MAJOR_MINOR)
+PACKAGE_SPEC_DIR             := $(ARCH)/$(PACKAGE_SPEC_NAME)
 
 PACKAGER_NAME:=$(shell id -nu)
 PACKAGER_EMAIL:=$(shell git config --global user.email)
@@ -70,52 +58,64 @@ else
 ITGMANIA_VERSION=$(ITGMANIA_VERSION_NUM)-$(ITGMANIA_DATE)
 ITGMANIA_DISTRIBUTION=UNRELEASED
 endif
-endif
+
+
+.PHONY: all
+all: execute-bit packages validate
+	# Prep staging dir
+	rm -rf target/$(PACKAGE_SPEC_DIR)
+	mkdir -p target/$(PACKAGE_SPEC_DIR)
+	# copy packaging metadata for this version into staging dir
+	rsync -v --update --recursive $(PACKAGE_SPEC_DIR)/* target/$(PACKAGE_SPEC_DIR)
+	# copy built itgmania into staging dir
+	mkdir -p target/$(PACKAGE_SPEC_DIR)/usr/games/$(PACKAGE_SPEC_NAME)
+	rsync --update --recursive $(ITGMANIA_BASE_DIR)/* target/$(PACKAGE_SPEC_DIR)/usr/games/$(PACKAGE_SPEC_DIR)/.
+.PHONY: all
 
 itgmania-%: \
-	target/$(FULLPATH)/DEBIAN/control \
-	target/$(FULLPATH)/usr/share/doc/$(PACKAGE_NAME)/changelog.Debian.gz \
-	target/$(FULLPATH)/usr/share/doc/$(PACKAGE_NAME)/copyright \
-	target/$(FULLPATH)/usr/share/lintian/overrides/$(PACKAGE_NAME) \
-	target/$(FULLPATH)/usr/games/$(ITGMPATH)/GtkModule.so \
-	target/$(FULLPATH)/usr/games/$(ITGMPATH)/itgmania \
-	target/$(FULLPATH)/usr/share/man/man6/itgmania.6.gz \
-	target/$(FULLPATH)/usr/bin/itgmania
-	cd target && fakeroot dpkg-deb --build $(FULLPATH)
-	mv target/$(FULLPATH).deb target/itgmania-$(RPI_MODEL)_$(ITGMANIA_VERSION)_$(DISTRO).deb
+	target/$(PACKAGE_SPEC_DIR)/DEBIAN/control \
+	target/$(PACKAGE_SPEC_DIR)/usr/share/doc/$(PACKAGE_NAME)/changelog.Debian.gz \
+	target/$(PACKAGE_SPEC_DIR)/usr/share/doc/$(PACKAGE_NAME)/copyright \
+	target/$(PACKAGE_SPEC_DIR)/usr/share/lintian/overrides/$(PACKAGE_NAME) \
+	target/$(PACKAGE_SPEC_DIR)/usr/games/$(PACKAGE_SPEC_NAME)/itgmania \
+	target/$(PACKAGE_SPEC_DIR)/usr/share/man/man6/itgmania.6.gz \
+	target/$(PACKAGE_SPEC_DIR)/usr/bin/itgmania
+	cd target && fakeroot dpkg-deb --build $(PACKAGE_SPEC_DIR)
+	mv target/$(PACKAGE_SPEC_DIR).deb target/itgmania-$(RPI_MODEL)_$(ITGMANIA_VERSION)_$(DISTRO).deb
 	lintian target/itgmania-$(RPI_MODEL)_$(ITGMANIA_VERSION)_$(DISTRO).deb
 
 # itgmania symlink on the PATH
-target/$(FULLPATH)/usr/bin/itgmania:
+target/$(PACKAGE_SPEC_DIR)/usr/bin/itgmania:
 	mkdir -p $(@D)
-	ln -s ../games/$(ITGMPATH)/itgmania $@
+	ln -s ../games/$(PACKAGE_SPEC_NAME)/itgmania $@
 
 # debian control files get envvars substituted FRESH EVERY TIME
-.PHONY: target/$(FULLPATH)/DEBIAN/*
-target/$(FULLPATH)/DEBIAN/*:
-	cat $(FULLPATH)/DEBIAN/$(@F) | envsubst > $@
+.PHONY: target/$(PACKAGE_SPEC_DIR)/DEBIAN/*
+target/$(PACKAGE_SPEC_DIR)/DEBIAN/*: ITGMANIA_DEPS=$(shell ./find-bin-dep-pkg.py --display debian-control $(ITGMANIA_BASE_DIR)/itgmania)
+target/$(PACKAGE_SPEC_DIR)/DEBIAN/*:
+	cat $(PACKAGE_SPEC_DIR)/DEBIAN/$(@F) | envsubst > $@
 
 # lintian overrides file must be substituted and renamed
-target/$(FULLPATH)/usr/share/lintian/overrides/$(PACKAGE_NAME): $(FULLPATH)/usr/share/lintian/overrides/itgmania
+target/$(PACKAGE_SPEC_DIR)/usr/share/lintian/overrides/$(PACKAGE_NAME): $(PACKAGE_SPEC_DIR)/usr/share/lintian/overrides/itgmania
 	cat $(<) | envsubst > $(basename $@)
 
 # changelog must be substituted and compressed
-target/$(FULLPATH)/usr/share/doc/$(PACKAGE_NAME)/changelog.Debian.gz: $(FULLPATH)/usr/share/doc/itgmania/changelog.Debian
+target/$(PACKAGE_SPEC_DIR)/usr/share/doc/$(PACKAGE_NAME)/changelog.Debian.gz: $(PACKAGE_SPEC_DIR)/usr/share/doc/itgmania/changelog.Debian
 	mkdir -p $(shell dirname $@)
 	cat $(<) | envsubst > $(basename $@)
 	gzip --no-name $(basename $@)
 
 # copyright gets renamed
-target/$(FULLPATH)/usr/share/doc/$(PACKAGE_NAME)/copyright: $(FULLPATH)/usr/share/doc/itgmania/copyright
+target/$(PACKAGE_SPEC_DIR)/usr/share/doc/$(PACKAGE_NAME)/copyright: $(PACKAGE_SPEC_DIR)/usr/share/doc/itgmania/copyright
 	cp $(<) $@
 
 # manpages must be compressed
-target/$(FULLPATH)/usr/share/man/man6/itgmania.6.gz: $(FULLPATH)/usr/share/man/man6/itgmania.6
+target/$(PACKAGE_SPEC_DIR)/usr/share/man/man6/itgmania.6.gz: $(PACKAGE_SPEC_DIR)/usr/share/man/man6/itgmania.6
 	gzip --no-name -9 $(basename $@)
 
 # itgmania needs stripping
-.PHONY: target/$(FULLPATH)/usr/games/$(ITGMPATH)/itgmania
-target/$(FULLPATH)/usr/games/$(ITGMPATH)/itgmania:
+.PHONY: target/$(PACKAGE_SPEC_DIR)/usr/games/$(PACKAGE_SPEC_NAME)/itgmania
+target/$(PACKAGE_SPEC_DIR)/usr/games/$(PACKAGE_SPEC_NAME)/itgmania:
 	strip --strip-unneeded $@
 
 # Install deb package linter
