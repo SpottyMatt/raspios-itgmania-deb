@@ -1,6 +1,6 @@
 #!/bin/bash
-# Script to extract version from ITGMania binary
-# Usage: ./extract-version-from-binary.sh <binary_path> [--major-minor-only]
+# Script to extract version and hash from ITGMania binary
+# Usage: ./extract-version-from-binary.sh <binary_path> [--major-minor-only|--hash-only|--version-hash]
 
 set -e
 
@@ -8,7 +8,7 @@ BINARY_PATH="$1"
 MODE="${2:-full}"
 
 if [ -z "$BINARY_PATH" ]; then
-    echo "Usage: $0 <binary_path> [--major-minor-only]" >&2
+    echo "Usage: $0 <binary_path> [--major-minor-only|--hash-only|--version-hash]" >&2
     exit 1
 fi
 
@@ -29,14 +29,27 @@ fi
 # Extract version from first line, handling formats like "ITGmania1.0.2-git-427484d100"
 VERSION_NUM=$(echo "$VERSION_OUTPUT" | head -n 1 | sed -E 's/ITGmania([0-9]+\.[0-9]+\.[0-9]+).*/\1/')
 
+# Extract hash from first line after "-git-"
+HASH=$(echo "$VERSION_OUTPUT" | head -n 1 | sed -E 's/.*-git-([a-f0-9]+).*/\1/')
+
 if [ -z "$VERSION_NUM" ]; then
     echo "Error: Could not parse version from output: $VERSION_OUTPUT" >&2
     exit 1
 fi
 
-if [ "$MODE" = "--major-minor-only" ]; then
-    # Extract just major.minor (e.g., "1.0" from "1.0.2")
-    echo "$VERSION_NUM" | cut -d. -f1-2
-else
-    echo "$VERSION_NUM"
-fi 
+case "$MODE" in
+    "--major-minor-only")
+        # Extract just major.minor (e.g., "1.0" from "1.0.2")
+        echo "$VERSION_NUM" | cut -d. -f1-2
+        ;;
+    "--hash-only")
+        echo "$HASH"
+        ;;
+    "--version-hash")
+        # Return both space-separated: "1.0.2 427484d100"
+        echo "$VERSION_NUM $HASH"
+        ;;
+    *)
+        echo "$VERSION_NUM"
+        ;;
+esac 
