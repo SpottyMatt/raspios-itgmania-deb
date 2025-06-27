@@ -4,7 +4,6 @@ Script to extract version, hash, and date from ITGMania binary
 Usage: ./extract-version-from-binary.py <binary_path> [--major-minor-only|--hash-only|--date-only|--version-hash|--version-hash-date]
 """
 
-import argparse
 import os
 import re
 import subprocess
@@ -67,52 +66,43 @@ def parse_version_info(version_output):
 
 
 def main():
-    parser = argparse.ArgumentParser(
-        description="Extract version, hash, and date from ITGMania binary",
-        formatter_class=argparse.RawDescriptionHelpFormatter,
-        epilog="""
-Examples:
-  %(prog)s /usr/local/itgmania/itgmania
-  %(prog)s /usr/local/itgmania/itgmania --major-minor-only
-  %(prog)s /usr/local/itgmania/itgmania --version-hash-date
-        """
-    )
+    # Handle arguments like bash script does
+    if len(sys.argv) < 2:
+        print(f"Usage: {sys.argv[0]} <binary_path> [--major-minor-only|--hash-only|--date-only|--version-hash|--version-hash-date]", file=sys.stderr)
+        sys.exit(1)
     
-    parser.add_argument('binary_path', help='Path to the ITGMania binary')
-    parser.add_argument('mode', nargs='?', default='full',
-                       help='Output mode: --major-minor-only, --hash-only, --date-only, --version-hash, --version-hash-date, or full (default)')
-    
-    args = parser.parse_args()
+    binary_path = sys.argv[1]
+    mode = sys.argv[2] if len(sys.argv) > 2 else 'full'
     
     # Validate binary exists and is executable
-    if not os.path.exists(args.binary_path):
-        print(f"Error: Binary not found: {args.binary_path}", file=sys.stderr)
+    if not os.path.exists(binary_path):
+        print(f"Error: Binary not found: {binary_path}", file=sys.stderr)
         sys.exit(1)
         
-    if not os.access(args.binary_path, os.X_OK):
-        print(f"Error: Binary not executable: {args.binary_path}", file=sys.stderr)
+    if not os.access(binary_path, os.X_OK):
+        print(f"Error: Binary not executable: {binary_path}", file=sys.stderr)
         sys.exit(1)
     
     try:
         # Get version output from binary
-        version_output = get_version_output(args.binary_path)
+        version_output = get_version_output(binary_path)
         
         # Parse the version information
         version_num, hash_value, date_value = parse_version_info(version_output)
         
         # Output based on requested mode
-        if args.mode == '--major-minor-only':
+        if mode == '--major-minor-only':
             # Extract just major.minor (e.g., "1.0" from "1.0.2")
             major_minor = '.'.join(version_num.split('.')[:2])
             print(major_minor)
-        elif args.mode == '--hash-only':
+        elif mode == '--hash-only':
             print(hash_value)
-        elif args.mode == '--date-only':
+        elif mode == '--date-only':
             print(date_value)
-        elif args.mode == '--version-hash':
+        elif mode == '--version-hash':
             # Return both space-separated: "1.0.2 427484d100"
             print(f"{version_num} {hash_value}")
-        elif args.mode == '--version-hash-date':
+        elif mode == '--version-hash-date':
             # Return all three space-separated: "1.0.2 427484d100 20250624"
             print(f"{version_num} {hash_value} {date_value}")
         else:
