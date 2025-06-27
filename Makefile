@@ -118,12 +118,6 @@ target/$(FULLPATH)/usr/share/man/man6/itgmania.6.gz: $(FULLPATH)/usr/share/man/m
 target/$(FULLPATH)/usr/games/$(ITGMPATH)/itgmania:
 	strip --strip-unneeded $@
 
-# GtkModule needs stripping and non-execute
-.PHONY: target/$(FULLPATH)/usr/games/$(ITGMPATH)/GtkModule.so
-target/$(FULLPATH)/usr/games/$(ITGMPATH)/GtkModule.so:
-	strip --strip-unneeded $@
-	chmod a-x $@
-
 # Install deb package linter
 .PHONY: packages
 packages:
