@@ -11,10 +11,6 @@ $PACKAGE_NAME binary: embedded-library *
 $PACKAGE_NAME binary: national-encoding usr/games/itgmania-1.0/*
 $PACKAGE_NAME binary: package-contains-vcs-control-file usr/games/itgmania-1.0/*
 
-# Depends is a long list and allowing multiple lines
-# makes it much easier to manage & diff
-$PACKAGE_NAME binary: multiline-field depends
-
 # This installs ITGMania to /usr/games
 # but we want the itgmania binary on the $PATH so
 # we leave a symlink in /usr/bin
