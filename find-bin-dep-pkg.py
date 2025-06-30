@@ -50,9 +50,9 @@ for library in shared_libraries:
 	if 0 != libpkg_finder.returncode:
 		raise RuntimeError( "No installed package provides {}. Can't help you...".format(library) )
 	package = libpkg_out.decode().split("\n")[0].split(":")[0]
-	if library in packages and packages[library] != package and not args.hints[library]:
+	if library in packages and packages[library] != package and (not args.hints or library not in args.hints):
 		raise RuntimeError( "Library {} is found in multiple packages: [{}, {}]. Please provide a hint as to which package is correct for this library." )
-	elif library in packages and packages[library] != package and args.hints[library]:
+	elif library in packages and packages[library] != package and args.hints and library in args.hints:
 		packages[library] = args.hints[library]
 	else:
 		packages[library] = package
