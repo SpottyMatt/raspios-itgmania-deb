@@ -1,5 +1,9 @@
 # ITGMania Binaries for Raspberry Pi
 
+<!-- ![Packaging ITGMania on Raspberry Pi](itgmania-deb.png) -->
+
+# ⚠️🚧 This is a work in progress which has not been tested yet. The following information is not guaranteed to be correct or accurate.
+
 These scripts can build `.deb` binary packages to install ITGMania on a Raspberry Pi.
 This repository's [releases](https://github.com/spottymatt/raspios-itgmania-deb/releases/)
 hosts some pre-built ITGMania binaries.
