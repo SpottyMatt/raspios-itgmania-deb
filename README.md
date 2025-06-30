@@ -1,12 +1,12 @@
 # ITGMania Binaries for Raspberry Pi
 
 These scripts can build `.deb` binary packages to install ITGMania on a Raspberry Pi.
-This repository's [releases](https://github.com/itgmania/raspios-itgmania-deb/releases/)
+This repository's [releases](https://github.com/spottymatt/raspios-itgmania-deb/releases/)
 hosts some pre-built ITGMania binaries.
 
 There is a lot more required to make ITGMania actually _playable_ on a Raspberry Pi.
 If all you want to do is play ITGMania, check out
-[`raspios-itgmania-build`](https://github.com/itgmania/raspios-itgmania-build) instead.
+[`raspios-itgmania-build`](https://github.com/spottymatt/raspios-itgmania-build) instead.
 
 1. [Download Binaries](#download-binaries)
 	1. [Installation Instructions](#installation-instructions)
@@ -14,7 +14,7 @@ If all you want to do is play ITGMania, check out
 
 ## Download Binaries
 
-Head over to the [releases](https://github.com/itgmania/raspios-itgmania-deb/releases).
+Head over to the [releases](https://github.com/spottymatt/raspios-itgmania-deb/releases).
 
 ### Installation Instructions
 
@@ -31,16 +31,16 @@ It should be used on a Raspberry Pi system that has successfully compiled ITGMan
 
 ### Pre-Requisites
 
-1. Your Raspberry Pi system has successfully [compiled ITGMania from source](https://github.com/itgmania/raspios-itgmania-build).
+1. Your Raspberry Pi system has successfully [compiled ITGMania from source](https://github.com/spottymatt/raspios-itgmania-build).
 2. Your Raspberry Pi system uses `dpkg` to manage packages.
 3. You are able to clone from GitHub.com
 
 ### Usage
 
-1. Ensure that `/usr/local` contains one or more `itgmania-X.X` directories from successful compilation of ITGMania
+1. Ensure that `/usr/local` contains an `itgmania` directory from successful compilation of ITGMania
 	1. This path is not configurable; if you compiled ITGMania somewhere else, copy it to `/usr/local`
 2. Run `make`
-3. One binary package will be generated in the `target` directory for each `/usr/local/itgmania-X.X` directory
+3. A binary package will be generated in the `target` directory for the `/usr/local/itgmania/itgmania` binary you compiled
 
 ### Versioning
 
@@ -48,9 +48,9 @@ Packages will be named following the pattern
 
 	itgmania-RPI-MODEL_VERSION_DATE_DISTRO.deb
 
-For example, if you built ITGMania 1.0.2, as it stood on July 23, 2023, and packaged it with this tool on a Raspberry Pi 4B, you would get
+For example, if you built ITGMania 1.0.2, as it stood on June 30 2025, and packaged it with this tool on a Raspberry Pi 4B, you would get
 
-	itgmania-4b_1.0.2_20230723_bookworm.deb
+	itgmania-4b_1.0.2_20250630_bookworm.deb
 
 The version number, source control revision, and revision date used in the binary package
 will be determined automatically by looking at the `itgmania` binary that you compiled.
