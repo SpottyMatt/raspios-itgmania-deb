@@ -6,12 +6,10 @@ $PACKAGE_NAME binary: copyright-should-refer-to-common-license-file-for-gpl
 # This isn't going to change.
 $PACKAGE_NAME binary: embedded-library *
 
-# These license files are in the final ITGMania distribution.
-# They should be included, but lintian shouldn't complain about them.
-
-$PACKAGE_NAME binary: extra-license-file usr/games/itgmania-1.0/Docs/Copying.MAD
-$PACKAGE_NAME binary: extra-license-file usr/games/itgmania-1.0/Docs/license-ext/vlgothic/LICENSE
-$PACKAGE_NAME binary: extra-license-file usr/games/itgmania-1.0/Docs/license-ext/vlgothic/LICENSE.en
+# ITGMania includes upstream files with various text encodings and VCS files
+# These come from the compiled ITGMania distribution and can't be easily changed
+$PACKAGE_NAME binary: national-encoding usr/games/itgmania-1.0/*
+$PACKAGE_NAME binary: package-contains-vcs-control-file usr/games/itgmania-1.0/*
 
 # Depends is a long list and allowing multiple lines
 # makes it much easier to manage & diff
@@ -21,7 +19,3 @@ $PACKAGE_NAME binary: multiline-field depends
 # but we want the itgmania binary on the $PATH so
 # we leave a symlink in /usr/bin
 $PACKAGE_NAME binary: package-section-games-but-has-usr-bin
-
-# This was built for Raspberry Pi on the debian-based Raspberry Pi OS
-# I don't know why deb doesn't know about the arm architecture.
-$PACKAGE_NAME binary: unknown-architecture armv7l

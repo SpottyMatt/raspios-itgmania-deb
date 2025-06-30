@@ -103,7 +103,7 @@ target/$(PACKAGE_SPEC_DIR)/usr/share/lintian/overrides/$(PACKAGE_NAME): $(PACKAG
 target/$(PACKAGE_SPEC_DIR)/usr/share/doc/$(PACKAGE_NAME)/changelog.Debian.gz: $(PACKAGE_SPEC_DIR)/usr/share/doc/itgmania/changelog.Debian
 	mkdir -p $(shell dirname $@)
 	cat $(<) | envsubst > $(basename $@)
-	gzip --no-name $(basename $@)
+	gzip -9 --no-name $(basename $@)
 
 # copyright gets renamed
 target/$(PACKAGE_SPEC_DIR)/usr/share/doc/$(PACKAGE_NAME)/copyright: $(PACKAGE_SPEC_DIR)/usr/share/doc/itgmania/copyright
