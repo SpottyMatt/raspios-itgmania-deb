@@ -1,0 +1,12 @@
+Package: $PACKAGE_NAME
+Version: $ITGMANIA_VERSION
+Section: contrib/games
+Priority: optional
+Architecture: $ARCH
+Depends: $ITGMANIA_DEPS
+Maintainer: Matthias Rozensztok <spottymatt@gmail.com>
+Description: Advanced cross-platform rhythm game for home and arcade use.
+ This package was specifically built for the Raspberry Pi $RPI_MODEL platform.
+ For more information about the process used to create this package,
+ visit https://github.com/spottymatt/raspios-itgmania-deb
+Homepage: https://github.com/itgmania/itgmania

@@ -1,0 +1,10 @@
+itgmania-$RPI_MODEL ($ITGMANIA_VERSION) $ITGMANIA_DISTRIBUTION; urgency=low
+
+
+  [ $ITGMANIA_VERSION $ITGMANIA_HASH $ITGMANIA_DATE ]
+  * Automatically-generated changelog message.
+    This package is just a distribution package for the ITGMania binary.
+    For a real log of changes to ITGMania, visit the source repository:
+    https://github.com/itgmania/itgmania
+ -- $PACKAGER_NAME <$PACKAGER_EMAIL>  $PACKAGE_DATE
+ 

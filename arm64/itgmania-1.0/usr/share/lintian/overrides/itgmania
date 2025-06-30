@@ -1,0 +1,17 @@
+# This binary package is GPL-licensed, but the software isn't.
+# We do not follow debian convention of symlinking to the local GPL
+$PACKAGE_NAME binary: copyright-should-refer-to-common-license-file-for-gpl
+
+# Lots of libraries had to be embedded in ITGMania
+# This isn't going to change.
+$PACKAGE_NAME binary: embedded-library *
+
+# ITGMania includes upstream files with various text encodings and VCS files
+# These come from the compiled ITGMania distribution and can't be easily changed
+$PACKAGE_NAME binary: national-encoding [usr/games/itgmania-1.0/*]
+$PACKAGE_NAME binary: package-contains-vcs-control-file [usr/games/itgmania-1.0/*]
+
+# This installs ITGMania to /usr/games
+# but we want the itgmania binary on the $PATH so
+# we leave a symlink in /usr/bin
+$PACKAGE_NAME binary: package-section-games-but-has-usr-bin
